@@ -20,32 +20,11 @@ import {
 } from 'lucide-react';
 
 const Money = () => {
-  const [transactions, setTransactions] = useState([
-    { id: 1, type: 'income', amount: 2500, category: 'Salary', description: 'Monthly salary', date: '2024-01-15', account: 'Checking', recurring: true },
-    { id: 2, type: 'expense', amount: 45, category: 'Groceries', description: 'Weekly shopping', date: '2024-01-15', account: 'Credit Card', recurring: false },
-    { id: 3, type: 'expense', amount: 120, category: 'Utilities', description: 'Electricity bill', date: '2024-01-14', account: 'Checking', recurring: true },
-    { id: 4, type: 'income', amount: 200, category: 'Freelance', description: 'Web design project', date: '2024-01-14', account: 'Checking', recurring: false },
-    { id: 5, type: 'expense', amount: 80, category: 'Transportation', description: 'Gas and parking', date: '2024-01-13', account: 'Credit Card', recurring: false },
-    { id: 6, type: 'expense', amount: 25, category: 'Food', description: 'Lunch', date: '2024-01-13', account: 'Cash', recurring: false },
-    { id: 7, type: 'expense', amount: 1200, category: 'Housing', description: 'Monthly rent', date: '2024-01-01', account: 'Checking', recurring: true },
-    { id: 8, type: 'expense', amount: 150, category: 'Entertainment', description: 'Netflix, Spotify, etc.', date: '2024-01-12', account: 'Credit Card', recurring: true },
-    { id: 9, type: 'income', amount: 50, category: 'Investment', description: 'Dividend payment', date: '2024-01-10', account: 'Savings', recurring: false },
-    { id: 10, type: 'expense', amount: 300, category: 'Healthcare', description: 'Doctor visit', date: '2024-01-08', account: 'Checking', recurring: false },
-  ]);
+  const [transactions, setTransactions] = useState([]);
 
-  const [budgets, setBudgets] = useState([
-    { id: 1, category: 'Groceries', limit: 400, spent: 245, period: 'monthly' },
-    { id: 2, category: 'Entertainment', limit: 200, spent: 150, period: 'monthly' },
-    { id: 3, category: 'Transportation', limit: 300, spent: 180, period: 'monthly' },
-    { id: 4, category: 'Food', limit: 250, spent: 125, period: 'monthly' },
-    { id: 5, category: 'Shopping', limit: 150, spent: 75, period: 'monthly' },
-  ]);
+  const [budgets, setBudgets] = useState([]);
 
-  const [goals, setGoals] = useState([
-    { id: 1, name: 'Emergency Fund', target: 10000, current: 6500, deadline: '2024-12-31', priority: 'high' },
-    { id: 2, name: 'Vacation', target: 3000, current: 1200, deadline: '2024-06-30', priority: 'medium' },
-    { id: 3, name: 'New Laptop', target: 1500, current: 800, deadline: '2024-03-31', priority: 'low' },
-  ]);
+  const [goals, setGoals] = useState([]);
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [showBudgetForm, setShowBudgetForm] = useState(false);
@@ -220,7 +199,7 @@ const Money = () => {
             <div>
               <p className="text-sm text-slate-600">Total Balance</p>
               <p className={`text-3xl font-bold ${balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                ${balance.toLocaleString()}
+                ₹{balance.toLocaleString()}
               </p>
             </div>
             <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
@@ -233,7 +212,7 @@ const Money = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-600">Total Income</p>
-              <p className="text-3xl font-bold text-green-600">${totalIncome.toLocaleString()}</p>
+              <p className="text-3xl font-bold text-green-600">₹{totalIncome.toLocaleString()}</p>
             </div>
             <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
               <TrendingUp className="w-6 h-6 text-green-600" />
@@ -245,7 +224,7 @@ const Money = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-600">Total Expenses</p>
-              <p className="text-3xl font-bold text-red-600">${totalExpenses.toLocaleString()}</p>
+              <p className="text-3xl font-bold text-red-600">₹{totalExpenses.toLocaleString()}</p>
             </div>
             <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
               <TrendingDown className="w-6 h-6 text-red-600" />
@@ -298,8 +277,8 @@ const Money = () => {
                   </div>
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm text-slate-600">
-                      <span>${budget.spent}</span>
-                      <span>${budget.limit}</span>
+                      <span>₹{budget.spent}</span>
+                      <span>₹{budget.limit}</span>
                     </div>
                     <div className="w-full bg-white rounded-full h-2">
                       <div 
@@ -338,8 +317,8 @@ const Money = () => {
                   </div>
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm text-slate-600">
-                      <span>${goal.current.toLocaleString()}</span>
-                      <span>${goal.target.toLocaleString()}</span>
+                      <span>₹{goal.current.toLocaleString()}</span>
+                      <span>₹{goal.target.toLocaleString()}</span>
                     </div>
                     <div className="w-full bg-slate-200 rounded-full h-2">
                       <div 
@@ -414,7 +393,7 @@ const Money = () => {
                   <span className={`font-bold ${
                     transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
                   }`}>
-                    {transaction.type === 'income' ? '+' : '-'}${transaction.amount}
+                    {transaction.type === 'income' ? '+' : '-'}₹{transaction.amount}
                   </span>
                   <div className="flex items-center space-x-1">
                     <button className="w-8 h-8 hover:bg-slate-200 rounded-lg flex items-center justify-center transition-colors">
@@ -449,7 +428,7 @@ const Money = () => {
                 <div key={category} className="space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="font-medium text-slate-900">{category}</span>
-                    <span className="text-sm text-slate-600">${amount}</span>
+                    <span className="text-sm text-slate-600">₹{amount}</span>
                   </div>
                   <div className="w-full bg-slate-200 rounded-full h-2">
                     <div 

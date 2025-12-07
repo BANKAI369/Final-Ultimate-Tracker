@@ -14,21 +14,11 @@ import {
 import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
-  const [habits] = useState([
-    { id: 1, name: 'Drink Water', streak: 7, completed: true, color: 'bg-blue-500' },
-    { id: 2, name: 'Exercise', streak: 3, completed: false, color: 'bg-green-500' },
-    { id: 3, name: 'Read Books', streak: 12, completed: true, color: 'bg-purple-500' },
-  ]);
+  const [habits] = useState([]);
 
-  const [reminders] = useState([
-    { id: 1, title: 'Team Meeting', time: '9:00 AM', completed: false },
-    { id: 2, title: 'Doctor Appointment', time: '2:30 PM', completed: false },
-  ]);
+  const [reminders] = useState([]);
 
-  const [transactions] = useState([
-    { id: 1, type: 'income', amount: 2500, category: 'Salary', date: 'Today' },
-    { id: 2, type: 'expense', amount: 45, category: 'Groceries', date: 'Today' },
-  ]);
+  const [transactions] = useState([]);
 
   const totalIncome = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
   const totalExpenses = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);

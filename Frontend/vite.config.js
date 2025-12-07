@@ -1,22 +1,18 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { resolve } from 'path';
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  root: 'Frontend',
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
   build: {
-    outDir: '../dist',
+    outDir: 'dist',
     assetsDir: 'assets',
     sourcemap: false,
     minify: 'terser',
   },
   server: {
-    // Use Vite default dev port (5173) to match backend CLIENT_URL and avoid CORS/port mismatch
     port: 5173,
     open: true,
   },

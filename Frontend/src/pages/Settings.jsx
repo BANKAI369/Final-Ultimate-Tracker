@@ -14,13 +14,15 @@ import {
   Globe,
   Smartphone
 } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 
 const Settings = () => {
+  const { theme, toggleTheme } = useTheme();
   const [activeTab, setActiveTab] = useState('profile');
   const [settings, setSettings] = useState({
     profile: {
-      name: 'Sarah Johnson',
-      email: 'sarah@example.com',
+      name: '',
+      email: '',
       timezone: 'America/New_York',
       language: 'English'
     },
@@ -75,16 +77,16 @@ const Settings = () => {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-slate-900">Settings</h1>
-        <p className="text-slate-600 mt-1">Customize your Ultimate Tracker experience.</p>
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Settings</h1>
+        <p className="text-slate-600 dark:text-slate-400 mt-1">Customize your Ultimate Tracker experience.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Settings Navigation */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="p-6 border-b border-slate-100">
-              <h2 className="font-semibold text-slate-900">Settings</h2>
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-700">
+              <h2 className="font-semibold text-slate-900 dark:text-white">Settings</h2>
             </div>
             <nav className="p-4">
               <ul className="space-y-2">
@@ -97,7 +99,7 @@ const Settings = () => {
                         className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                           activeTab === tab.id
                             ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg'
-                            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                            : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
                         }`}
                       >
                         <Icon className="w-5 h-5" />
@@ -113,14 +115,14 @@ const Settings = () => {
 
         {/* Settings Content */}
         <div className="lg:col-span-3">
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
             
             {/* Profile Settings */}
             {activeTab === 'profile' && (
               <div>
-                <div className="p-6 border-b border-slate-100">
-                  <h2 className="text-xl font-semibold text-slate-900">Profile Settings</h2>
-                  <p className="text-slate-600 mt-1">Manage your personal information and preferences.</p>
+                <div className="p-6 border-b border-slate-100 dark:border-slate-700">
+                  <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Profile Settings</h2>
+                  <p className="text-slate-600 dark:text-slate-400 mt-1">Manage your personal information and preferences.</p>
                 </div>
                 <div className="p-6 space-y-6">
                   <div className="flex items-center space-x-6">
@@ -128,40 +130,40 @@ const Settings = () => {
                       <User className="w-10 h-10 text-white" />
                     </div>
                     <div className="space-y-2">
-                      <button className="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-sm font-medium transition-colors">
+                      <button className="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg text-sm font-medium transition-colors">
                         Change Photo
                       </button>
-                      <button className="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium transition-colors">
+                      <button className="px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg text-sm font-medium transition-colors">
                         Remove Photo
                       </button>
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">Full Name</label>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Full Name</label>
                       <input
                         type="text"
                         value={settings.profile.name}
                         onChange={(e) => updateSetting('profile', 'name', e.target.value)}
-                        className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Email</label>
                       <input
                         type="email"
                         value={settings.profile.email}
                         onChange={(e) => updateSetting('profile', 'email', e.target.value)}
-                        className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">Timezone</label>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Timezone</label>
                       <select
                         value={settings.profile.timezone}
                         onChange={(e) => updateSetting('profile', 'timezone', e.target.value)}
-                        className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                       >
                         <option value="America/New_York">Eastern Time</option>
                         <option value="America/Chicago">Central Time</option>
@@ -170,11 +172,11 @@ const Settings = () => {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">Language</label>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Language</label>
                       <select
                         value={settings.profile.language}
                         onChange={(e) => updateSetting('profile', 'language', e.target.value)}
-                        className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                       >
                         <option value="English">English</option>
                         <option value="Spanish">Spanish</option>
@@ -190,13 +192,13 @@ const Settings = () => {
             {/* Notification Settings */}
             {activeTab === 'notifications' && (
               <div>
-                <div className="p-6 border-b border-slate-100">
-                  <h2 className="text-xl font-semibold text-slate-900">Notification Settings</h2>
-                  <p className="text-slate-600 mt-1">Choose what notifications you want to receive.</p>
+                <div className="p-6 border-b border-slate-100 dark:border-slate-700">
+                  <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Notification Settings</h2>
+                  <p className="text-slate-600 dark:text-slate-400 mt-1">Choose what notifications you want to receive.</p>
                 </div>
                 <div className="p-6 space-y-6">
                   <div>
-                    <h3 className="font-semibold text-slate-900 mb-4">App Notifications</h3>
+                    <h3 className="font-semibold text-slate-900 dark:text-white mb-4">App Notifications</h3>
                     <div className="space-y-4">
                       {[
                         { key: 'habits', label: 'Habit Reminders', desc: 'Get reminded to complete your daily habits' },
@@ -204,10 +206,10 @@ const Settings = () => {
                         { key: 'period', label: 'Period Tracking', desc: 'Cycle predictions and symptom reminders' },
                         { key: 'money', label: 'Money Alerts', desc: 'Budget warnings and expense notifications' },
                       ].map((item) => (
-                        <div key={item.key} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                        <div key={item.key} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700 rounded-xl">
                           <div>
-                            <h4 className="font-medium text-slate-900">{item.label}</h4>
-                            <p className="text-sm text-slate-600">{item.desc}</p>
+                            <h4 className="font-medium text-slate-900 dark:text-white">{item.label}</h4>
+                            <p className="text-sm text-slate-600 dark:text-slate-400">{item.desc}</p>
                           </div>
                           <button
                             onClick={() => updateSetting('notifications', item.key, !settings.notifications[item.key])}
@@ -227,7 +229,7 @@ const Settings = () => {
                   </div>
                   
                   <div>
-                    <h3 className="font-semibold text-slate-900 mb-4">Delivery Methods</h3>
+                    <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Delivery Methods</h3>
                     <div className="space-y-4">
                       {[
                         { key: 'email', label: 'Email Notifications', icon: Globe },
@@ -236,10 +238,10 @@ const Settings = () => {
                       ].map((item) => {
                         const Icon = item.icon;
                         return (
-                          <div key={item.key} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                          <div key={item.key} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700 rounded-xl">
                             <div className="flex items-center space-x-3">
-                              <Icon className="w-5 h-5 text-slate-600" />
-                              <span className="font-medium text-slate-900">{item.label}</span>
+                              <Icon className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                              <span className="font-medium text-slate-900 dark:text-white">{item.label}</span>
                             </div>
                             <button
                               onClick={() => updateSetting('notifications', item.key, !settings.notifications[item.key])}
@@ -265,9 +267,9 @@ const Settings = () => {
             {/* Privacy Settings */}
             {activeTab === 'privacy' && (
               <div>
-                <div className="p-6 border-b border-slate-100">
-                  <h2 className="text-xl font-semibold text-slate-900">Privacy & Security</h2>
-                  <p className="text-slate-600 mt-1">Control your data and security preferences.</p>
+                <div className="p-6 border-b border-slate-100 dark:border-slate-700">
+                  <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Privacy & Security</h2>
+                  <p className="text-slate-600 dark:text-slate-400 mt-1">Control your data and security preferences.</p>
                 </div>
                 <div className="p-6 space-y-6">
                   <div className="space-y-4">
@@ -277,10 +279,10 @@ const Settings = () => {
                       { key: 'backupCloud', label: 'Cloud Backup', desc: 'Automatically backup your data to the cloud' },
                       { key: 'twoFactor', label: 'Two-Factor Authentication', desc: 'Add an extra layer of security to your account' },
                     ].map((item) => (
-                      <div key={item.key} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                      <div key={item.key} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700 rounded-xl">
                         <div>
-                          <h4 className="font-medium text-slate-900">{item.label}</h4>
-                          <p className="text-sm text-slate-600">{item.desc}</p>
+                          <h4 className="font-medium text-slate-900 dark:text-white">{item.label}</h4>
+                          <p className="text-sm text-slate-600 dark:text-slate-400">{item.desc}</p>
                         </div>
                         <button
                           onClick={() => updateSetting('privacy', item.key, !settings.privacy[item.key])}
@@ -298,18 +300,18 @@ const Settings = () => {
                     ))}
                   </div>
                   
-                  <div className="border-t border-slate-200 pt-6">
-                    <h3 className="font-semibold text-slate-900 mb-4">Data Management</h3>
+                  <div className="border-t border-slate-200 dark:border-slate-700 pt-6">
+                    <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Data Management</h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <button className="flex items-center justify-center space-x-2 p-4 border border-slate-300 rounded-xl hover:bg-slate-50 transition-colors">
-                        <Download className="w-5 h-5 text-slate-600" />
-                        <span className="font-medium text-slate-700">Export Data</span>
+                      <button className="flex items-center justify-center space-x-2 p-4 border border-slate-300 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                        <Download className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                        <span className="font-medium text-slate-700 dark:text-slate-300">Export Data</span>
                       </button>
-                      <button className="flex items-center justify-center space-x-2 p-4 border border-slate-300 rounded-xl hover:bg-slate-50 transition-colors">
-                        <Upload className="w-5 h-5 text-slate-600" />
-                        <span className="font-medium text-slate-700">Import Data</span>
+                      <button className="flex items-center justify-center space-x-2 p-4 border border-slate-300 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                        <Upload className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                        <span className="font-medium text-slate-700 dark:text-slate-300">Import Data</span>
                       </button>
-                      <button className="flex items-center justify-center space-x-2 p-4 border border-red-300 text-red-600 rounded-xl hover:bg-red-50 transition-colors">
+                      <button className="flex items-center justify-center space-x-2 p-4 border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
                         <Trash2 className="w-5 h-5" />
                         <span className="font-medium">Delete Account</span>
                       </button>
@@ -322,18 +324,18 @@ const Settings = () => {
             {/* Appearance Settings */}
             {activeTab === 'appearance' && (
               <div>
-                <div className="p-6 border-b border-slate-100">
-                  <h2 className="text-xl font-semibold text-slate-900">Appearance</h2>
-                  <p className="text-slate-600 mt-1">Customize the look and feel of your app.</p>
+                <div className="p-6 border-b border-slate-100 dark:border-slate-700">
+                  <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Appearance</h2>
+                  <p className="text-slate-600 dark:text-slate-400 mt-1">Customize the look and feel of your app.</p>
                 </div>
                 <div className="p-6 space-y-6">
                   <div>
                     <h3 className="font-semibold text-slate-900 mb-4">Theme</h3>
                     <div className="grid grid-cols-2 gap-4">
                       <button
-                        onClick={() => updateSetting('appearance', 'theme', 'light')}
+                        onClick={() => toggleTheme('light')}
                         className={`p-4 border-2 rounded-xl transition-all ${
-                          settings.appearance.theme === 'light'
+                          theme === 'light'
                             ? 'border-purple-500 bg-purple-50'
                             : 'border-slate-300 hover:border-slate-400'
                         }`}
@@ -344,9 +346,9 @@ const Settings = () => {
                         </div>
                       </button>
                       <button
-                        onClick={() => updateSetting('appearance', 'theme', 'dark')}
+                        onClick={() => toggleTheme('dark')}
                         className={`p-4 border-2 rounded-xl transition-all ${
-                          settings.appearance.theme === 'dark'
+                          theme === 'dark'
                             ? 'border-purple-500 bg-purple-50'
                             : 'border-slate-300 hover:border-slate-400'
                         }`}
@@ -360,7 +362,7 @@ const Settings = () => {
                   </div>
                   
                   <div>
-                    <h3 className="font-semibold text-slate-900 mb-4">Color Scheme</h3>
+                    <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Color Scheme</h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       {colorSchemes.map((scheme) => (
                         <button
@@ -368,13 +370,13 @@ const Settings = () => {
                           onClick={() => updateSetting('appearance', 'colorScheme', scheme.id)}
                           className={`p-4 border-2 rounded-xl transition-all ${
                             settings.appearance.colorScheme === scheme.id
-                              ? 'border-purple-500 bg-purple-50'
-                              : 'border-slate-300 hover:border-slate-400'
+                              ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
+                              : 'border-slate-300 dark:border-slate-600 hover:border-slate-400 dark:hover:border-slate-500'
                           }`}
                         >
                           <div className="space-y-2">
                             <div className={`w-full h-8 bg-gradient-to-r ${scheme.colors} rounded-lg`}></div>
-                            <span className="text-sm font-medium text-slate-900">{scheme.name}</span>
+                            <span className="text-sm font-medium text-slate-900 dark:text-white">{scheme.name}</span>
                           </div>
                         </button>
                       ))}
@@ -382,16 +384,16 @@ const Settings = () => {
                   </div>
                   
                   <div>
-                    <h3 className="font-semibold text-slate-900 mb-4">Display Options</h3>
+                    <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Display Options</h3>
                     <div className="space-y-4">
                       {[
                         { key: 'compactMode', label: 'Compact Mode', desc: 'Show more content in less space' },
                         { key: 'animations', label: 'Animations', desc: 'Enable smooth transitions and animations' },
                       ].map((item) => (
-                        <div key={item.key} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                        <div key={item.key} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700 rounded-xl">
                           <div>
-                            <h4 className="font-medium text-slate-900">{item.label}</h4>
-                            <p className="text-sm text-slate-600">{item.desc}</p>
+                            <h4 className="font-medium text-slate-900 dark:text-white">{item.label}</h4>
+                            <p className="text-sm text-slate-600 dark:text-slate-400">{item.desc}</p>
                           </div>
                           <button
                             onClick={() => updateSetting('appearance', item.key, !settings.appearance[item.key])}
@@ -414,7 +416,7 @@ const Settings = () => {
             )}
 
             {/* Save Button */}
-            <div className="p-6 border-t border-slate-100 bg-slate-50">
+            <div className="p-6 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-700">
               <div className="flex justify-end">
                 <button className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-xl font-medium hover:shadow-lg transition-all duration-200">
                   <Save className="w-5 h-5" />

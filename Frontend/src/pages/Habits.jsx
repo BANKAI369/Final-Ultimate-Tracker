@@ -2,52 +2,7 @@ import React, { useState } from 'react';
 import { Plus, Target, Calendar, TrendingUp, Filter, CheckCircle2, Circle, Flame, Trophy, Clock, BookOpen, Heart, Dumbbell, Brain } from 'lucide-react';
 
 const Habits = () => {
-  const [habits, setHabits] = useState([
-    {
-      id: 1,
-      name: 'Morning Meditation',
-      category: 'mindfulness',
-      difficulty: 'easy',
-      streak: 12,
-      bestStreak: 25,
-      completedToday: true,
-      weekProgress: [true, true, false, true, true, true, true],
-      notes: 'Start each day with clarity and focus'
-    },
-    {
-      id: 2,
-      name: 'Read 30 Minutes',
-      category: 'learning',
-      difficulty: 'medium',
-      streak: 8,
-      bestStreak: 15,
-      completedToday: false,
-      weekProgress: [true, true, true, false, true, true, false],
-      notes: 'Expand knowledge and vocabulary daily'
-    },
-    {
-      id: 3,
-      name: 'Exercise',
-      category: 'fitness',
-      difficulty: 'hard',
-      streak: 5,
-      bestStreak: 18,
-      completedToday: true,
-      weekProgress: [false, true, true, true, false, true, true],
-      notes: 'Stay strong and healthy'
-    },
-    {
-      id: 4,
-      name: 'Drink 8 Glasses Water',
-      category: 'health',
-      difficulty: 'easy',
-      streak: 15,
-      bestStreak: 30,
-      completedToday: false,
-      weekProgress: [true, true, true, true, true, false, true],
-      notes: 'Stay hydrated throughout the day'
-    }
-  ]);
+  const [habits, setHabits] = useState([]);
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');

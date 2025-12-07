@@ -22,30 +22,16 @@ import {
 
 const Period = () => {
   const [cycleData, setCycleData] = useState({
-    lastPeriod: '2024-01-01',
+    lastPeriod: '',
     cycleLength: 28,
     periodLength: 5,
-    currentDay: 16,
-    cycles: [
-      { id: 1, startDate: '2024-01-01', endDate: '2024-01-05', length: 28, flow: 'medium' },
-      { id: 2, startDate: '2023-12-04', endDate: '2023-12-08', length: 28, flow: 'heavy' },
-      { id: 3, startDate: '2023-11-06', endDate: '2023-11-10', length: 28, flow: 'light' },
-    ]
+    currentDay: 0,
+    cycles: []
   });
 
-  const [symptoms, setSymptoms] = useState([
-    { id: 1, name: 'Cramps', severity: 'moderate', date: '2024-01-15', category: 'physical', notes: 'Lower back pain' },
-    { id: 2, name: 'Mood Swings', severity: 'mild', date: '2024-01-14', category: 'emotional', notes: 'Feeling irritable' },
-    { id: 3, name: 'Bloating', severity: 'severe', date: '2024-01-13', category: 'physical', notes: 'Uncomfortable after meals' },
-    { id: 4, name: 'Fatigue', severity: 'moderate', date: '2024-01-12', category: 'physical', notes: 'Low energy all day' },
-    { id: 5, name: 'Headache', severity: 'mild', date: '2024-01-11', category: 'physical', notes: 'Tension headache' },
-  ]);
+  const [symptoms, setSymptoms] = useState([]);
 
-  const [dailyLogs, setDailyLogs] = useState([
-    { date: '2024-01-15', flow: 'medium', mood: 6, energy: 5, pain: 4, temperature: 98.2, notes: 'Normal day' },
-    { date: '2024-01-14', flow: 'light', mood: 7, energy: 6, pain: 2, temperature: 98.1, notes: 'Feeling better' },
-    { date: '2024-01-13', flow: 'heavy', mood: 4, energy: 3, pain: 7, temperature: 98.4, notes: 'Difficult day' },
-  ]);
+  const [dailyLogs, setDailyLogs] = useState([]);
 
   const [predictions, setPredictions] = useState({
     nextPeriod: { date: '2024-01-29', confidence: 85 },

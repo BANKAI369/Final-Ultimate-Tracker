@@ -10,8 +10,10 @@ import {
   Settings, 
   Target 
 } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 
 const Navigation = () => {
+  const { theme } = useTheme();
   const navItems = [
     { path: '/', icon: Home, label: 'Dashboard' },
     { path: '/habits', icon: CheckCircle2, label: 'Habits' },
@@ -23,15 +25,15 @@ const Navigation = () => {
   ];
 
   return (
-    <nav className="bg-white border-r border-slate-200 w-64 min-h-screen fixed left-0 top-0 z-20">
-      <div className="p-6 border-b border-slate-200">
+    <nav className={`${theme === 'dark' ? 'dark' : ''} bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 w-64 min-h-screen fixed left-0 top-0 z-20`}>
+      <div className="p-6 border-b border-slate-200 dark:border-slate-700">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl flex items-center justify-center">
             <Target className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-slate-900">Ultimate Tracker</h1>
-            <p className="text-xs text-slate-600">Life Dashboard</p>
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white">Ultimate Tracker</h1>
+            <p className="text-xs text-slate-600 dark:text-slate-400">Life Dashboard</p>
           </div>
         </div>
       </div>
@@ -48,7 +50,7 @@ const Navigation = () => {
                     `flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                       isActive
                         ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg'
-                        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
                     }`
                   }
                 >

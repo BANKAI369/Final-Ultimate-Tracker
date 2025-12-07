@@ -2,13 +2,7 @@ import React, { useState } from 'react';
 import { Clock, Plus, CheckCircle2, Bell, Calendar, CreditCard as Edit3, Trash2, AlertCircle } from 'lucide-react';
 
 const Reminders = () => {
-  const [reminders, setReminders] = useState([
-    { id: 1, title: 'Team Meeting', description: 'Weekly team sync', time: '9:00 AM', date: 'Today', completed: false, priority: 'high' },
-    { id: 2, title: 'Doctor Appointment', description: 'Annual checkup', time: '2:30 PM', date: 'Today', completed: false, priority: 'high' },
-    { id: 3, title: 'Grocery Shopping', description: 'Buy weekly groceries', time: '6:00 PM', date: 'Today', completed: true, priority: 'medium' },
-    { id: 4, title: 'Call Mom', description: 'Weekly check-in', time: '7:00 PM', date: 'Tomorrow', completed: false, priority: 'medium' },
-    { id: 5, title: 'Pay Bills', description: 'Electricity and water', time: '10:00 AM', date: 'Tomorrow', completed: false, priority: 'high' },
-  ]);
+  const [reminders, setReminders] = useState([]);
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [newReminder, setNewReminder] = useState({
