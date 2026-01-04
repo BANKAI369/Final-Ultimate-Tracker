@@ -4,191 +4,144 @@ import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, User, Eye, EyeOff, Loader } from 'lucide-react';
 
 const Auth = () => {
-  const [isLogin, setIsLogin] = useState(true);
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: ''
-  });
+  const { login, signup, forgotPassword, resetPassword } = useAuth();
+  const navigate = useNavigate();
+  const [params] = useSearchParams();
+
+  const [mode, setMode] = useState('login'); // login | signup | forgot | reset
+  const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const { login, register } = useAuth();
-  const navigate = useNavigate();
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    setError('');
-  };
+  // Detect reset link
+  useEffect(() => {
+    if (params.get('token') && params.get('id')) {
+      setMode('reset');
+    }
+  }, [params]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
     setSuccess('');
 
-    try {
-      let result;
-      if (isLogin) {
-        result = await login(formData.email, formData.password);
-      } else {
-        result = await register(formData.name, formData.email, formData.password);
-      }
+    if (mode === 'login') {
+      const res = await login(form.email, form.password);
+      if (res.success) navigate('/');
+      else setError(res.error);
+    }
 
-      if (result.success) {
-        setSuccess(isLogin ? 'Login successful!' : 'Registration successful!');
-        setTimeout(() => navigate('/'), 1500);
-      } else {
-        setError(result.error);
+    if (mode === 'signup') {
+      if (form.password !== form.confirm) {
+        setError('Passwords do not match');
+        return;
       }
-    } catch (err) {
-      setError('An unexpected error occurred');
-    } finally {
-      setLoading(false);
+      const res = await signup(form.name, form.email, form.password);
+      if (res.success) navigate('/');
+      else setError(res.error);
+    }
+
+    if (mode === 'forgot') {
+      const res = await forgotPassword(form.email);
+      if (res.success) setSuccess('Reset link sent to email');
+      else setError(res.error);
+    }
+
+    if (mode === 'reset') {
+      const res = await resetPassword(
+        params.get('token'),
+        params.get('id'),
+        form.password
+      );
+      if (res.success) {
+        setSuccess('Password reset successful');
+        setMode('login');
+      } else {
+        setError(res.error);
+      }
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 p-8">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-              Ultimate Tracker
-            </h1>
-            <p className="text-slate-600 dark:text-slate-400">
-              {isLogin ? 'Welcome back' : 'Create your account'}
-            </p>
-          </div>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white p-6 rounded-xl w-full max-w-sm shadow"
+      >
+        <h2 className="text-xl font-bold mb-4 text-center capitalize">
+          {mode.replace('-', ' ')}
+        </h2>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Name Field (Register only) */}
-            {!isLogin && (
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  Full Name
-                </label>
-                <div className="relative">
-                  <User className="absolute left-3 top-3.5 w-5 h-5 text-slate-400" />
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    placeholder="John Doe"
-                    className="w-full pl-10 pr-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
-                    required={!isLogin}
-                  />
-                </div>
-              </div>
-            )}
+        {mode === 'signup' && (
+          <input
+            placeholder="Name"
+            value={form.name}
+            onChange={e => setForm({ ...form, name: e.target.value })}
+            className="w-full p-2 border rounded mb-3"
+            required
+          />
+        )}
 
-            {/* Email Field */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3.5 w-5 h-5 text-slate-400" />
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  placeholder="you@example.com"
-                  className="w-full pl-10 pr-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
-                  required
-                />
-              </div>
-            </div>
+        {(mode !== 'reset') && (
+          <input
+            type="email"
+            placeholder="Email"
+            value={form.email}
+            onChange={e => setForm({ ...form, email: e.target.value })}
+            className="w-full p-2 border rounded mb-3"
+            required
+          />
+        )}
 
-            {/* Password Field */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3.5 w-5 h-5 text-slate-400" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  placeholder="••••••••"
-                  className="w-full pl-10 pr-12 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-                >
-                  {showPassword ? (
-                    <EyeOff className="w-5 h-5" />
-                  ) : (
-                    <Eye className="w-5 h-5" />
-                  )}
-                </button>
-              </div>
-            </div>
+        {(mode !== 'forgot') && (
+          <input
+            type="password"
+            placeholder="Password"
+            value={form.password}
+            onChange={e => setForm({ ...form, password: e.target.value })}
+            className="w-full p-2 border rounded mb-3"
+            required
+          />
+        )}
 
-            {/* Error Message */}
-            {error && (
-              <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-sm">
-                {error}
-              </div>
-            )}
+        {(mode === 'signup' || mode === 'reset') && (
+          <input
+            type="password"
+            placeholder="Confirm Password"
+            value={form.confirm}
+            onChange={e => setForm({ ...form, confirm: e.target.value })}
+            className="w-full p-2 border rounded mb-3"
+            required
+          />
+        )}
 
-            {/* Success Message */}
-            {success && (
-              <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl text-green-600 dark:text-green-400 text-sm">
-                {success}
-              </div>
-            )}
+        {error && <p className="text-red-600 text-sm mb-2">{error}</p>}
+        {success && <p className="text-green-600 text-sm mb-2">{success}</p>}
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white font-medium rounded-xl hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
-            >
-              {loading && <Loader className="w-5 h-5 animate-spin" />}
-              <span>{isLogin ? 'Login' : 'Create Account'}</span>
-            </button>
-          </form>
+        <button className="w-full bg-purple-600 text-white py-2 rounded">
+          Submit
+        </button>
 
-          {/* Toggle Form */}
-          <div className="mt-6 text-center">
-            <p className="text-slate-600 dark:text-slate-400">
-              {isLogin ? "Don't have an account?" : 'Already have an account?'}{' '}
-              <button
-                onClick={() => {
-                  setIsLogin(!isLogin);
-                  setFormData({ name: '', email: '', password: '' });
-                  setError('');
-                  setSuccess('');
-                }}
-                className="text-purple-600 dark:text-purple-400 font-medium hover:underline"
-              >
-                {isLogin ? 'Sign up' : 'Login'}
+        <div className="text-sm text-center mt-4 space-y-1">
+          {mode === 'login' && (
+            <>
+              <button type="button" onClick={() => setMode('signup')} className="underline">
+                Create account
               </button>
-            </p>
-          </div>
-        </div>
+              <br />
+              <button type="button" onClick={() => setMode('forgot')} className="underline">
+                Forgot password?
+              </button>
+            </>
+          )}
 
-        {/* Footer */}
-        <div className="mt-6 text-center text-sm text-slate-600 dark:text-slate-400">
-          <p>© 2025 Ultimate Tracker. All rights reserved.</p>
+          {(mode === 'signup' || mode === 'forgot') && (
+            <button type="button" onClick={() => setMode('login')} className="underline">
+              Back to login
+            </button>
+          )}
         </div>
-      </div>
+      </form>
     </div>
   );
 };
