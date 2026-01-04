@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   DollarSign, 
   Plus, 
@@ -18,13 +18,41 @@ import {
   Download,
   Upload
 } from 'lucide-react';
+import api from '../lib/api';
 
 const Money = () => {
-  const [transactions, setTransactions] = useState([]);
+  const [transactions, setTransactions] = useState(() => {
+    try {
+      const saved = localStorage.getItem('moneyData');
+      if (!saved) return [];
+      const parsed = JSON.parse(saved);
+      return parsed.transactions || [];
+    } catch (e) {
+      return [];
+    }
+  });
 
-  const [budgets, setBudgets] = useState([]);
+  const [budgets, setBudgets] = useState(() => {
+    try {
+      const saved = localStorage.getItem('moneyData');
+      if (!saved) return [];
+      const parsed = JSON.parse(saved);
+      return parsed.budgets || [];
+    } catch (e) {
+      return [];
+    }
+  });
 
-  const [goals, setGoals] = useState([]);
+  const [goals, setGoals] = useState(() => {
+    try {
+      const saved = localStorage.getItem('moneyData');
+      if (!saved) return [];
+      const parsed = JSON.parse(saved);
+      return parsed.goals || [];
+    } catch (e) {
+      return [];
+    }
+  });
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [showBudgetForm, setShowBudgetForm] = useState(false);
@@ -55,14 +83,29 @@ const Money = () => {
     priority: 'medium'
   });
 
-  const addTransaction = () => {
+  const addTransaction = async () => {
     if (newTransaction.amount && newTransaction.category) {
-      const transaction = {
+      const localTx = {
         id: Date.now(),
         ...newTransaction,
         amount: parseFloat(newTransaction.amount)
       };
-      setTransactions([transaction, ...transactions]);
+
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const payload = { ...newTransaction, amount: parseFloat(newTransaction.amount) };
+          const res = await api.post('/money/transactions', payload);
+          // server returns the created transaction
+          setTransactions([res.data, ...transactions]);
+        } catch (err) {
+          // fallback to local-only transaction
+          setTransactions([localTx, ...transactions]);
+        }
+      } else {
+        setTransactions([localTx, ...transactions]);
+      }
+
       setNewTransaction({
         type: 'expense',
         amount: '',
@@ -74,38 +117,74 @@ const Money = () => {
       });
       setShowAddForm(false);
     }
-  };
+  }; 
 
-  const addBudget = () => {
+  const addBudget = async () => {
     if (newBudget.category && newBudget.limit) {
-      const budget = {
+      const localBudget = {
         id: Date.now(),
         ...newBudget,
         limit: parseFloat(newBudget.limit),
         spent: 0
       };
-      setBudgets([...budgets, budget]);
+
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const res = await api.post('/money/budgets', { category: newBudget.category, limit: parseFloat(newBudget.limit), period: newBudget.period });
+          setBudgets([...budgets, res.data]);
+        } catch (err) {
+          setBudgets([...budgets, localBudget]);
+        }
+      } else {
+        setBudgets([...budgets, localBudget]);
+      }
+
       setNewBudget({ category: '', limit: '', period: 'monthly' });
       setShowBudgetForm(false);
     }
-  };
+  }; 
 
-  const addGoal = () => {
+  const addGoal = async () => {
     if (newGoal.name && newGoal.target) {
-      const goal = {
+      const localGoal = {
         id: Date.now(),
         ...newGoal,
         target: parseFloat(newGoal.target),
         current: 0
       };
-      setGoals([...goals, goal]);
+
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const res = await api.post('/money/goals', { name: newGoal.name, target: parseFloat(newGoal.target), deadline: newGoal.deadline, priority: newGoal.priority });
+          setGoals([...goals, res.data]);
+        } catch (err) {
+          setGoals([...goals, localGoal]);
+        }
+      } else {
+        setGoals([...goals, localGoal]);
+      }
+
       setNewGoal({ name: '', target: '', deadline: '', priority: 'medium' });
       setShowGoalForm(false);
     }
-  };
-  const deleteTransaction = (id) => {
-    setTransactions(transactions.filter(t => t.id !== id));
-  };
+  }; 
+  const deleteTransaction = async (id) => {
+    const tx = transactions.find(t => (t._id && t._id === id) || (t.id && t.id === id));
+    if (!tx) return;
+
+    const token = localStorage.getItem('token');
+    if (token && tx._id) {
+      try {
+        await api.delete(`/money/transactions/${tx._id}`);
+      } catch (err) {
+        // ignore errors, proceed to remove locally
+      }
+    }
+
+    setTransactions(transactions.filter(t => (t._id && t._id !== id) || (t.id && t.id !== id)));
+  }; 
 
   const totalIncome = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
   const totalExpenses = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
@@ -159,6 +238,53 @@ const Money = () => {
       default: return { color: 'text-slate-600', bg: 'bg-slate-100' };
     }
   };
+
+  const moneyData = { transactions, budgets, goals };
+
+  useEffect(() => {
+    localStorage.setItem('moneyData', JSON.stringify(moneyData));
+  }, [moneyData]);
+
+
+
+  // If the user is authenticated, sync local data to server and prefer server data
+  useEffect(() => {
+    const syncWithServer = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      try {
+        // First try to upload any local-only items
+        const local = JSON.parse(localStorage.getItem('moneyData') || '{}');
+        const localTx = (local.transactions || []).filter(t => !t._id);
+        const localBud = (local.budgets || []).filter(b => !b._id);
+        const localGoals = (local.goals || []).filter(g => !g._id);
+
+        for (const t of localTx) {
+          try { await api.post('/money/transactions', { ...t, amount: t.amount, date: t.date }); } catch (e) { }
+        }
+        for (const b of localBud) {
+          try { await api.post('/money/budgets', { category: b.category, limit: b.limit, period: b.period }); } catch (e) { }
+        }
+        for (const g of localGoals) {
+          try { await api.post('/money/goals', { name: g.name, target: g.target, deadline: g.deadline, priority: g.priority }); } catch (e) { }
+        }
+
+        // Fetch authoritative server data
+        const res = await api.get('/money');
+        if (res && res.data) {
+          setTransactions(res.data.transactions || []);
+          setBudgets(res.data.budgets || []);
+          setGoals(res.data.goals || []);
+        }
+      } catch (err) {
+        // network or server error — keep local data
+      }
+    };
+
+    syncWithServer();
+  }, []);
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -268,7 +394,7 @@ const Money = () => {
               const status = getBudgetStatus(budget);
               const percentage = Math.min((budget.spent / budget.limit) * 100, 100);
               return (
-                <div key={budget.id} className={`p-4 rounded-xl border-2 ${status.bg} ${status.bg.replace('bg-', 'border-').replace('100', '200')}`}>
+                <div key={budget._id || budget.id} className={`p-4 rounded-xl border-2 ${status.bg} ${status.bg.replace('bg-', 'border-').replace('100', '200')}`}>
                   <div className="flex items-center justify-between mb-3">
                     <span className="font-medium text-slate-900">{budget.category}</span>
                     <span className={`text-sm font-medium ${status.color}`}>
@@ -308,7 +434,7 @@ const Money = () => {
               const progress = (goal.current / goal.target) * 100;
               const priority = getGoalPriority(goal.priority);
               return (
-                <div key={goal.id} className="p-4 bg-slate-50 rounded-xl">
+                <div key={goal._id || goal.id} className="p-4 bg-slate-50 rounded-xl">
                   <div className="flex items-center justify-between mb-3">
                     <span className="font-medium text-slate-900">{goal.name}</span>
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${priority.bg} ${priority.color}`}>
@@ -369,7 +495,7 @@ const Money = () => {
           </div>
           <div className="p-6 space-y-4 max-h-96 overflow-y-auto">
             {filteredTransactions.map((transaction) => (
-              <div key={transaction.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors">
+              <div key={transaction._id || transaction.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors">
                 <div className="flex items-center space-x-4">
                   <div className={`w-3 h-3 rounded-full ${
                     transaction.type === 'income' ? 'bg-green-500' : 'bg-red-500'
@@ -400,7 +526,7 @@ const Money = () => {
                       <Edit3 className="w-4 h-4 text-slate-400" />
                     </button>
                     <button 
-                      onClick={() => deleteTransaction(transaction.id)}
+                      onClick={() => deleteTransaction(transaction._id || transaction.id)}
                       className="w-8 h-8 hover:bg-red-100 rounded-lg flex items-center justify-center transition-colors"
                     >
                       <Trash2 className="w-4 h-4 text-red-400" />

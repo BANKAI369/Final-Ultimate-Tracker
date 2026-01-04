@@ -12,6 +12,42 @@ import {
   Clock
 } from 'lucide-react';
 
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
+} from 'recharts';
+
+import {
+  BarChart, Bar
+} from 'recharts';
+
+
+const getWeeklyTrend = (habits) => {
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+  return days.map((day, index) => {
+    const completed = habits.filter(
+      h => h.weekProgress?.[index]
+    ).length;
+
+    return { day, completed };
+  });
+};
+
+const getCategoryStats = (habits) => {
+  const map = {};
+
+  habits.forEach(h => {
+    if (!map[h.category]) {
+      map[h.category] = { category: h.category, completed: 0, total: 0 };
+    }
+    map[h.category].total += 1;
+    if (h.completedToday) map[h.category].completed += 1;
+  });
+
+  return Object.values(map);
+};
+
+
 const Analytics = () => {
   const [timeRange, setTimeRange] = useState('30days');
 
@@ -337,6 +373,63 @@ const Analytics = () => {
             </div>
           </div>
         </div>
+        <div className="bg-white p-6 rounded-xl shadow mb-6">
+          <h3 className="text-lg font-semibold mb-4">Weekly Completion Trend</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={getWeeklyTrend(habits)}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="day" />
+              <YAxis allowDecimals={false} /> 
+              <Tooltip />
+              <Line
+                type="monotone"
+                dataKey="completed"
+                stroke="#7c3aed"
+                strokeWidth={3}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="bg-white p-6 rounded-xl shadow mb-6">
+          <h3 className="text-lg font-semibold mb-4">Category Performance</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={getCategoryStats(habits)}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="category" />
+              <YAxis allowDecimals={false} />
+              <Tooltip />
+              <Bar dataKey="completed" fill="#22c55e" />
+              <Bar dataKey="total" fill="#e5e7eb" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-white p-4 rounded-xl shadow">
+            <p className="text-sm text-gray-500">Longest Streak</p>
+            <p className="text-2xl font-bold">
+              {Math.max(...habits.map(h => h.bestStreak), 0)} days
+            </p>
+          </div>
+
+          <div className="bg-white p-4 rounded-xl shadow">
+            <p className="text-sm text-gray-500">Active Streaks</p>
+            <p className="text-2xl font-bold">
+              {habits.filter(h => h.streak > 0).length}
+            </p>
+          </div>
+
+          <div className="bg-white p-4 rounded-xl shadow">
+            <p className="text-sm text-gray-500">Completion Rate Today</p>
+            <p className="text-2xl font-bold">
+              {habits.length
+                ? Math.round(
+                    (habits.filter(h => h.completedToday).length / habits.length) * 100
+                  )
+                : 0}%
+            </p>
+          </div>
+        </div>
+
       </div>
     </div>
   );

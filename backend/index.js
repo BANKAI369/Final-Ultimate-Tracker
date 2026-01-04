@@ -7,6 +7,7 @@ const cookieParser = require('cookie-parser');
 
 const authRoutes = require('./src/routes/auth');
 const habitRoutes = require('./src/routes/habits'); // we'll create later
+const moneyRoutes = require('./src/routes/money');
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use(
 // routes
 app.use('/api/auth', authRoutes);
 app.use('/api/habits', habitRoutes);
+app.use('/api/money', moneyRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Ultimate Tracker API running' });

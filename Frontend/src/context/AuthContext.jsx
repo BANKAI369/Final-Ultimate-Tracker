@@ -9,29 +9,21 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [token, setToken] = useState(null);
 
-  // Check if user is logged in on mount
   useEffect(() => {
-    checkAuth();
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+
+    if (token && user) {
+      setToken(token);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      setUser(JSON.parse(user));
+    }
+
+    setLoading(false);
   }, []);
 
-  const checkAuth = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (token) {
-        // Verify token is still valid
-        const response = await axios.get(`${API_URL}/auth/me`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setUser(response.data.user);
-      }
-    } catch (err) {
-      localStorage.removeItem('token');
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const login = async (email, password) => {
     setLoading(true);
@@ -44,8 +36,10 @@ export const AuthProvider = ({ children }) => {
       
       const { token, user } = response.data;
       localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+      setToken(token);
       setUser(user);
-      
+
       // Set default header for all future requests
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       
@@ -71,8 +65,10 @@ export const AuthProvider = ({ children }) => {
       
       const { token, user } = response.data;
       localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+      setToken(token);
       setUser(user);
-      
+
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       
       return { success: true };
@@ -97,7 +93,9 @@ export const AuthProvider = ({ children }) => {
       console.error('Logout error:', err);
     } finally {
       localStorage.removeItem('token');
+      localStorage.removeItem('user');
       delete axios.defaults.headers.common['Authorization'];
+      setToken(null);
       setUser(null);
       setError(null);
     }

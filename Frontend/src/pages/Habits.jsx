@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import api from '../lib/api';
 import { Plus, Target, Calendar, TrendingUp, Filter, CheckCircle2, Circle, Flame, Trophy, Clock, BookOpen, Heart, Dumbbell, Brain } from 'lucide-react';
 
 const Habits = () => {
   const [habits, setHabits] = useState([]);
 
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingHabit, setEditingHabit] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [newHabit, setNewHabit] = useState({
     name: '',
@@ -72,6 +74,40 @@ const Habits = () => {
     });
     return stats;
   };
+
+  const handleAuthError = (err) => {
+    if (err?.response?.status === 401) {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+      return true;
+    }
+    return false;
+  };
+
+  const deleteHabit = async (id) => {
+    if (!window.confirm('Delete this habit?')) return;
+
+    try {
+      await api.delete(`/habits/${id}`);
+      setHabits(prev => prev.filter(h => h.id !== id));
+    } catch (err) {
+      if (handleAuthError(err)) return;
+      alert('Failed to delete habit');
+    }
+  };
+const saveEdit = async () => {
+  try {
+    const res = await api.put(`/habits/${editingHabit.id}`, editingHabit);
+    setHabits(prev =>
+      prev.map(h => h.id === editingHabit.id ? { ...res.data.habit, id: res.data.habit._id } : h)
+    );
+    setEditingHabit(null);
+  } catch {
+    alert('Failed to update habit');
+  }
+};
+
+
 
   const categoryStats = getCategoryStats();
   const totalHabits = habits.length;
@@ -179,75 +215,90 @@ const Habits = () => {
           const CategoryIcon = categories[habit.category].icon;
           const weekCompletion = habit.weekProgress.filter(Boolean).length;
           
-          return (
+            return (
             <div key={habit.id} className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                    habit.completedToday ? 'bg-green-100' : 'bg-gray-100'
-                  }`}>
-                    <CategoryIcon className={`w-5 h-5 ${
-                      habit.completedToday ? 'text-green-600' : categories[habit.category].color
-                    }`} />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900">{habit.name}</h3>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${difficultyColors[habit.difficulty]}`}>
-                        {habit.difficulty}
-                      </span>
-                      <span className="text-xs text-gray-500">{categories[habit.category].label}</span>
-                    </div>
-                  </div>
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                habit.completedToday ? 'bg-green-100' : 'bg-gray-100'
+                }`}>
+                <CategoryIcon className={`w-5 h-5 ${
+                  habit.completedToday ? 'text-green-600' : categories[habit.category].color
+                }`} />
                 </div>
+                <div>
+                <h3 className="font-semibold text-gray-900">{habit.name}</h3>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${difficultyColors[habit.difficulty]}`}>
+                  {habit.difficulty}
+                  </span>
+                  <span className="text-xs text-gray-500">{categories[habit.category].label}</span>
+                </div>
+                </div>
+              </div>
+              <div className="flex gap-2">
                 <button
-                  onClick={() => toggleHabit(habit.id)}
-                  className={`p-2 rounded-lg transition-colors ${
-                    habit.completedToday
-                      ? 'bg-green-100 text-green-600 hover:bg-green-200'
-                      : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
-                  }`}
+                onClick={() => toggleHabit(habit.id)}
+                className={`p-2 rounded-lg transition-colors ${
+                  habit.completedToday
+                  ? 'bg-green-100 text-green-600 hover:bg-green-200'
+                  : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                }`}
                 >
-                  {habit.completedToday ? <CheckCircle2 className="w-6 h-6" /> : <Circle className="w-6 h-6" />}
+                {habit.completedToday ? <CheckCircle2 className="w-6 h-6" /> : <Circle className="w-6 h-6" />}
                 </button>
+                <button
+                onClick={() => deleteHabit(habit.id)}
+                className="p-2 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-colors"
+                >
+                ✕
+                </button>
+                <button
+                  onClick={() => setEditingHabit(habit)}
+                  className="p-2 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200"
+                >
+                  Edit
+                </button>
+
+              </div>
               </div>
 
               {/* Streak Info */}
               <div className="flex items-center gap-4 mb-4">
-                <div className="flex items-center gap-1">
-                  <Flame className="w-4 h-4 text-orange-500" />
-                  <span className="text-sm font-medium text-gray-900">{habit.streak} day streak</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Trophy className="w-4 h-4 text-yellow-500" />
-                  <span className="text-sm text-gray-600">Best: {habit.bestStreak}</span>
-                </div>
+              <div className="flex items-center gap-1">
+                <Flame className="w-4 h-4 text-orange-500" />
+                <span className="text-sm font-medium text-gray-900">{habit.streak} day streak</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Trophy className="w-4 h-4 text-yellow-500" />
+                <span className="text-sm text-gray-600">Best: {habit.bestStreak}</span>
+              </div>
               </div>
 
               {/* Week Progress */}
               <div className="mb-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700">This Week</span>
-                  <span className="text-sm text-gray-600">{weekCompletion}/7 days</span>
-                </div>
-                <div className="flex gap-1">
-                  {habit.weekProgress.map((completed, index) => (
-                    <div
-                      key={index}
-                      className={`flex-1 h-2 rounded-full ${
-                        completed ? 'bg-green-400' : 'bg-gray-200'
-                      }`}
-                    ></div>
-                  ))}
-                </div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-gray-700">This Week</span>
+                <span className="text-sm text-gray-600">{weekCompletion}/7 days</span>
+              </div>
+              <div className="flex gap-1">
+                {habit.weekProgress.map((completed, index) => (
+                <div
+                  key={index}
+                  className={`flex-1 h-2 rounded-full ${
+                  completed ? 'bg-green-400' : 'bg-gray-200'
+                  }`}
+                ></div>
+                ))}
+              </div>
               </div>
 
               {/* Notes */}
               {habit.notes && (
-                <p className="text-sm text-gray-600 italic">{habit.notes}</p>
+              <p className="text-sm text-gray-600 italic">{habit.notes}</p>
               )}
             </div>
-          );
+            );
         })}
       </div>
 
@@ -350,6 +401,35 @@ const Habits = () => {
                 className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
               >
                 Add Habit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {editingHabit && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-xl w-96">
+            <h3 className="font-semibold mb-4">Edit Habit</h3>
+
+            <input
+              value={editingHabit.name}
+              onChange={e => setEditingHabit({ ...editingHabit, name: e.target.value })}
+              className="w-full border p-2 rounded mb-3"
+            />
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => setEditingHabit(null)}
+                className="flex-1 bg-gray-200 p-2 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={saveEdit}
+                className="flex-1 bg-purple-600 text-white p-2 rounded"
+              >
+                Save
               </button>
             </div>
           </div>
