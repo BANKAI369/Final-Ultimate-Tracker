@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import Layout from './components/Layout';
@@ -21,8 +22,15 @@ function App() {
             {/* Auth Routes */}
             <Route path="/auth" element={<Auth />} />
 
-            {/* Main Routes - No Auth Gate */}
-            <Route path="/" element={<Layout />}>
+            {/* PROTECTED ROUTES */}
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <Layout />
+                </ProtectedRoute>
+              }
+            >
               <Route index element={<Dashboard />} />
               <Route path="habits" element={<Habits />} />
               <Route path="reminders" element={<Reminders />} />

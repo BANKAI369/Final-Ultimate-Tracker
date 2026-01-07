@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import api from '../lib/api';
 import { Plus, Target, Calendar, TrendingUp, Filter, CheckCircle2, Circle, Flame, Trophy, Clock, BookOpen, Heart, Dumbbell, Brain } from 'lucide-react';
 
@@ -42,21 +42,50 @@ const Habits = () => {
       return habit;
     }));
   };
+  const normalizedHabits = res.data.habits.map(habit => ({
+  ...habit,
+  category: habit.category || 'health',
+  weekProgress: Array.isArray(habit.weekProgress)
+    ? habit.weekProgress
+    : [false, false, false, false, false, false, false],
+  streak: habit.streak || 0,
+  bestStreak: habit.bestStreak || 0,
+  completedToday: habit.completedToday || false
+}));
 
-  const addHabit = () => {
-    if (newHabit.name.trim()) {
-      const habit = {
-        id: Date.now(),
-        ...newHabit,
-        streak: 0,
-        bestStreak: 0,
-        completedToday: false,
-        weekProgress: [false, false, false, false, false, false, false]
-      };
-      setHabits([...habits, habit]);
-      setNewHabit({ name: '', category: 'health', difficulty: 'medium', notes: '' });
-      setShowAddModal(false);
+setHabits(normalizedHabits);
+
+
+  const addHabit = async () => {
+    if (!newHabit.name.trim()) return;
+
+    const localHabit = {
+      id: Date.now(),
+      ...newHabit,
+      streak: 0,
+      bestStreak: 0,
+      completedToday: false,
+      weekProgress: [false, false, false, false, false, false, false]
+    };
+
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const res = await api.post('/habits', newHabit);
+        const created = res.data;
+        // normalize and append
+        setHabits(prev => [...prev, { ...created, id: created._id || created.id }]);
+      } catch (err) {
+        if (handleAuthError(err)) return;
+        // fallback to local
+        setHabits(prev => [...prev, localHabit]);
+      }
+    } else {
+      setHabits(prev => [...prev, localHabit]);
     }
+
+    setNewHabit({ name: '', category: 'health', difficulty: 'medium', notes: '' });
+    setShowAddModal(false);
   };
 
   const filteredHabits = selectedCategory === 'all' 
@@ -78,7 +107,7 @@ const Habits = () => {
   const handleAuthError = (err) => {
     if (err?.response?.status === 401) {
       localStorage.removeItem('token');
-      window.location.href = '/login';
+      window.location.href = '/auth';
       return true;
     }
     return false;
@@ -107,7 +136,19 @@ const saveEdit = async () => {
   }
 };
 
-
+// Load habits from server on mount
+useEffect(() => {
+  api.get('/habits')
+    .then(res => {
+      const data = res.data;
+      const habitsArr = Array.isArray(data) ? data : (data.habits || []);
+      // normalize server _id to id for compatibility with existing UI logic
+      setHabits(habitsArr.map(h => ({ ...h, id: h._id || h.id })));
+    })
+    .catch(err => {
+      if (!handleAuthError(err)) console.error(err);
+    });
+}, []);
 
   const categoryStats = getCategoryStats();
   const totalHabits = habits.length;
@@ -212,9 +253,10 @@ const saveEdit = async () => {
       {/* Habits Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {filteredHabits.map(habit => {
-          const CategoryIcon = categories[habit.category].icon;
-          const weekCompletion = habit.weekProgress.filter(Boolean).length;
-          
+          const categoryConfig = categories[habit.category] || categories.health;
+          const CategoryIcon = categoryConfig.icon;
+          const weekCompletion = (habit.weekProgress || []).filter(Boolean).length;
+
             return (
             <div key={habit.id} className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between mb-4">
@@ -332,76 +374,33 @@ const saveEdit = async () => {
         </div>
       )}
 
-      {/* Add Habit Modal */}
+      {/* Add Habit Modal (minimal) */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">Add New Habit</h3>
-            
+          <div className="bg-white rounded-xl p-6 w-full max-w-sm">
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Habit Name</label>
-                <input
-                  type="text"
-                  value={newHabit.name}
-                  onChange={(e) => setNewHabit({...newHabit, name: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="e.g., Morning walk"
-                />
-              </div>
+              <input
+                type="text"
+                value={newHabit.name}
+                onChange={e => setNewHabit({ ...newHabit, name: e.target.value })}
+                placeholder="Habit name"
+                className="w-full px-3 py-2 border border-gray-300 rounded"
+              />
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                <select
-                  value={newHabit.category}
-                  onChange={(e) => setNewHabit({...newHabit, category: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              <div className="flex gap-3 mt-4">
+                <button
+                  onClick={() => setShowAddModal(false)}
+                  className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded"
                 >
-                  <option value="health">Health</option>
-                  <option value="fitness">Fitness</option>
-                  <option value="learning">Learning</option>
-                  <option value="mindfulness">Mindfulness</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Difficulty</label>
-                <select
-                  value={newHabit.difficulty}
-                  onChange={(e) => setNewHabit({...newHabit, difficulty: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  Cancel
+                </button>
+                <button
+                  onClick={addHabit}
+                  className="flex-1 px-4 py-2 bg-purple-600 text-white rounded"
                 >
-                  <option value="easy">Easy</option>
-                  <option value="medium">Medium</option>
-                  <option value="hard">Hard</option>
-                </select>
+                  Add Habit
+                </button>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Notes (Optional)</label>
-                <textarea
-                  value={newHabit.notes}
-                  onChange={(e) => setNewHabit({...newHabit, notes: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  rows="3"
-                  placeholder="Why is this habit important to you?"
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => setShowAddModal(false)}
-                className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={addHabit}
-                className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-              >
-                Add Habit
-              </button>
             </div>
           </div>
         </div>

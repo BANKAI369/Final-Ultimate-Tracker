@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Mail, Lock, User, Eye, EyeOff, Loader } from 'lucide-react';
 
 const Auth = () => {
@@ -26,9 +26,14 @@ const Auth = () => {
     setSuccess('');
 
     if (mode === 'login') {
-      const res = await login(form.email, form.password);
-      if (res.success) navigate('/');
-      else setError(res.error);
+      try {
+        const res = await login(form.email, form.password);
+        finalizeAuth(res);
+        navigate('/');
+      } catch (err) {
+        const message = err.response?.data?.message || 'Login failed';
+        setError(message);
+      }
     }
 
     if (mode === 'signup') {

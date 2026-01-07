@@ -30,13 +30,20 @@ app.get('/', (req, res) => {
   res.json({ message: 'Ultimate Tracker API running' });
 });
 
+// Validate environment
+const PORT = process.env.PORT || 5000;
+if (!process.env.MONGO_URI) {
+  console.error('❌ MONGO_URI is not set. Please create a .env file in the backend folder with MONGO_URI and PORT.');
+  process.exit(1);
+}
+
 // connect to MongoDB and start server
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
     console.log('✅ MongoDB connected');
-    app.listen(process.env.PORT, () => {
-      console.log(`✅ Server running on port ${process.env.PORT}`);
+    app.listen(PORT, () => {
+      console.log(`✅ Server running on port ${PORT}`);
     });
   })
   .catch((err) => {

@@ -8,9 +8,9 @@ const router = express.Router();
 router.use(auth);
 
 // GET /api/habits
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
   try {
-    const habits = await Habit.find({ userId: req.userId }).sort({ createdAt: -1 });
+    const habits = await Habit.find({ userId: req.user.id }).sort({ createdAt: -1 });
     res.json(habits);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
@@ -18,17 +18,25 @@ router.get('/', async (req, res) => {
 });
 
 // POST /api/habits
-router.post('/', async (req, res) => {
+router.post('/', auth, async (req, res) => {
   try {
     const habit = await Habit.create({
-      userId: req.userId,
-      ...req.body,
+      name: req.body.name,
+      category: req.body.category,
+      difficulty: req.body.difficulty,
+      notes: req.body.notes,
+      userId: req.user.id   // 🔥 THIS WAS MISSING
     });
-    res.status(201).json(habit);
+
+    res.status(201).json({ habit });
   } catch (err) {
-    res.status(400).json({ message: 'Invalid data', error: err.message });
+    res.status(400).json({
+      message: 'Invalid data',
+      error: err.message
+    });
   }
 });
+
 
 // PUT /api/habits/:id
 router.put('/:id', async (req, res) => {

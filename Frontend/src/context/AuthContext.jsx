@@ -8,36 +8,15 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Restore auth on page reload
+  // Restore auth on page reload (token-only)
   useEffect(() => {
     const savedToken = localStorage.getItem('token');
-    const savedUser = localStorage.getItem('user');
-
-    if (savedToken && savedUser) {
-      setToken(savedToken);
-      setUser(JSON.parse(savedUser));
-    }
-
+    if (savedToken) setToken(savedToken);
     setLoading(false);
   }, []);
 
   const login = async (email, password) => {
-    try {
-      const res = await api.post('/auth/login', { email, password });
-
-      localStorage.setItem('token', res.data.token);
-      localStorage.setItem('user', JSON.stringify(res.data.user));
-
-      setToken(res.data.token);
-      setUser(res.data.user);
-
-      return { success: true };
-    } catch (err) {
-      return {
-        success: false,
-        error: err.response?.data?.message || 'Login failed'
-      };
-    }
+    return api.post('/auth/login', { email, password });
   };
 
   const signup = async (name, email, password) => {
@@ -94,6 +73,16 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
   };
 
+  // Apply server login response (store token/user and update context)
+  const finalizeAuth = (res) => {
+    const tokenRes = res?.data?.token;
+    const userRes = res?.data?.user;
+    if (tokenRes) localStorage.setItem('token', tokenRes);
+    if (userRes) localStorage.setItem('user', JSON.stringify(userRes));
+    setToken(tokenRes || null);
+    setUser(userRes || null);
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -102,6 +91,7 @@ export const AuthProvider = ({ children }) => {
         loading,
         isAuthenticated: !!token,
         login,
+        finalizeAuth,
         signup,
         forgotPassword,
         resetPassword,
